@@ -63,8 +63,8 @@
   },
   "dependencies": {
     "lib0": "^0.2.52",
-    "socket.io": "^4.5.1",
-    "socket.io-client": "^4.5.1",
+    "socket.io": "^4.5.3",
+    "socket.io-client": "^4.5.3",
     "y-leveldb": "^0.1.1",
     "y-protocols": "^1.0.5"
   },
