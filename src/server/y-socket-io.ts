@@ -36,6 +36,7 @@ export interface YSocketIOConfiguration {
    * @param handshake Provided from the handshake attribute of the socket io
    */
   authenticate?: (handshake: { [key: string]: any }) => Promise<boolean> | boolean
+  permissionMiddleware?: (handshake: { [key: string]: any }) => Promise<string[]> | string[]
 }
 
 /**
@@ -69,7 +70,7 @@ export class YSocketIO extends Observable<string> {
    * @param {Server} io Server instance from Socket IO
    * @param {YSocketIOConfiguration} configuration (Optional) The YSocketIO configuration
    */
-  constructor (io: Server, configuration?: YSocketIOConfiguration) {
+  constructor(io: Server, configuration?: YSocketIOConfiguration) {
     super()
 
     this.io = io
@@ -89,13 +90,16 @@ export class YSocketIO extends Observable<string> {
    *  It also starts socket connection listeners.
    * @type {() => void}
    */
-  public initialize (): void {
+  public initialize(): void {
     const dynamicNamespace = this.io.of(/^\/yjs\|.*$/)
 
     dynamicNamespace.use(async (socket, next) => {
-      if ((this.configuration?.authenticate) == null) return next()
-      if (await this.configuration.authenticate(socket.handshake)) return next()
-      else return next(new Error('Unauthorized'))
+      if ((this.configuration?.authenticate) != null) {
+        if (!(await this.configuration.authenticate(socket.handshake))) {
+          return next(new Error('Unauthorized'))
+        }
+      }
+      return next()
     })
 
     dynamicNamespace.on('connection', async (socket) => {
@@ -103,12 +107,24 @@ export class YSocketIO extends Observable<string> {
 
       const doc = await this.initDocument(namespace, socket.nsp, this.configuration?.gcEnabled)
 
+      if ((this.configuration?.permissionMiddleware) != null) {
+        const clientPermissions = await this.configuration.permissionMiddleware(socket.handshake);
+        doc.getMap("permissions").set(socket.id, clientPermissions)
+        if (clientPermissions.length == 0) {
+          socket.disconnect()
+          return;
+        }
+      }
+
+      this.emit('client-connect', [socket,doc,namespace])
       this.initSyncListeners(socket, doc)
       this.initAwarenessListeners(socket, doc)
+
 
       this.initSocketListeners(socket, doc)
 
       this.startSynchronization(socket, doc)
+
     })
   }
 
@@ -118,7 +134,7 @@ export class YSocketIO extends Observable<string> {
    * this way when you destroy the document you are also closing any existing connection on the document.
    * @type {Map<string, Document>}
    */
-  public get documents (): Map<string, Document> {
+  public get documents(): Map<string, Document> {
     return this._documents
   }
 
@@ -135,7 +151,7 @@ export class YSocketIO extends Observable<string> {
    * @param {boolean} gc Enable/Disable garbage collection (default: gc=true)
    * @returns {Promise<Document>} The document
    */
-  private async initDocument (name: string, namespace: Namespace, gc: boolean = true): Promise<Document> {
+  private async initDocument(name: string, namespace: Namespace, gc: boolean = true): Promise<Document> {
     const doc = this._documents.get(name) ?? (new Document(name, namespace, {
       onUpdate: (doc, update) => this.emit('document-update', [doc, update]),
       onChangeAwareness: (doc, update) => this.emit('awareness-update', [doc, update]),
@@ -158,8 +174,9 @@ export class YSocketIO extends Observable<string> {
    * @private
    * @param {string} levelPersistenceDir The directory path where the persistent Level database is stored
    */
-  private initLevelDB (levelPersistenceDir: string): void {
+  private initLevelDB(levelPersistenceDir: string): void {
     const ldb = new LeveldbPersistence(levelPersistenceDir)
+
     this.persistence = {
       provider: ldb,
       bindState: async (docName: string, ydoc: Document) => {
@@ -173,6 +190,12 @@ export class YSocketIO extends Observable<string> {
     }
   }
 
+  private hasPermission(doc: Document, socket_id: string, type: string) {
+    if (type in (doc.getMap("permissions").get(socket_id) as string[])) {
+      return true;
+    }
+    return false;
+  }
   /**
    * This function initializes the socket event listeners to synchronize document changes.
    *
@@ -194,11 +217,15 @@ export class YSocketIO extends Observable<string> {
    */
   private readonly initSyncListeners = (socket: Socket, doc: Document): void => {
     socket.on('sync-step-1', (stateVector: Uint8Array, syncStep2: (update: Uint8Array) => void) => {
-      syncStep2(Y.encodeStateAsUpdate(doc, new Uint8Array(stateVector)))
+      if (this.hasPermission(doc, socket.id, 'write')) {
+        syncStep2(Y.encodeStateAsUpdate(doc, new Uint8Array(stateVector)))
+      }
     })
 
     socket.on('sync-update', (update: Uint8Array) => {
-      Y.applyUpdate(doc, update, null)
+      if (this.hasPermission(doc, socket.id, 'write')) {
+        Y.applyUpdate(doc, update, null)
+      }
     })
   }
 
@@ -234,7 +261,10 @@ export class YSocketIO extends Observable<string> {
    */
   private readonly initSocketListeners = (socket: Socket, doc: Document): void => {
     socket.on('disconnect', async () => {
-      if ((await socket.nsp.allSockets()).size === 0) {
+      if (doc.getMap("permissions").get(socket.id)) {
+        doc.getMap("permissions").delete(socket.id)
+      }
+      if ((await socket.nsp.fetchSockets()).length === 0) {
         this.emit('all-document-connections-closed', [doc])
         if (this.persistence != null) {
           await this.persistence.writeState(doc.name, doc)
