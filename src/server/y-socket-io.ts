@@ -192,7 +192,7 @@ export class YSocketIO extends Observable<string> {
 
   private hasPermission(doc: Document, socket_id: string, type: string) {
     const client_permissions = (doc.getMap("permissions").get(socket_id) as string[]) ?? []
-    if (client_permissions.includes(type)) {
+    if (client_permissions.includes(type)) {      
       return true;
     }
     return false;
