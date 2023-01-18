@@ -36,7 +36,7 @@ export interface YSocketIOConfiguration {
    * @param handshake Provided from the handshake attribute of the socket io
    */
   authenticate?: (handshake: { [key: string]: any }) => Promise<boolean> | boolean
-  permissionMiddleware?: (handshake: { [key: string]: any }, doc: Document) => Promise<string[]> | string[]
+  permissionMiddleware?: (socket: Socket, doc: Document) => Promise<string[]> | string[]
 }
 
 /**
@@ -108,7 +108,7 @@ export class YSocketIO extends Observable<string> {
       const doc = await this.initDocument(namespace, socket.nsp, this.configuration?.gcEnabled)
 
       if ((this.configuration?.permissionMiddleware) != null) {
-        const clientPermissions = await this.configuration.permissionMiddleware(socket.handshake, doc);
+        const clientPermissions = await this.configuration.permissionMiddleware(socket, doc);
         doc.getMap("permissions").set(socket.id, clientPermissions)
         if (clientPermissions.length == 0) {
           socket.disconnect()

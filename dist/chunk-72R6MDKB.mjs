@@ -84,7 +84,7 @@ var m = class extends v {
       var a, i;
       let s = e.nsp.name.replace(/\/yjs\|/, ""), n = await this.initDocument(s, e.nsp, (a = this.configuration) == null ? void 0 : a.gcEnabled);
       if (((i = this.configuration) == null ? void 0 : i.permissionMiddleware) != null) {
-        let r = await this.configuration.permissionMiddleware(e.handshake, n);
+        let r = await this.configuration.permissionMiddleware(e, n);
         if (n.getMap("permissions").set(e.id, r), r.length == 0) {
           e.disconnect();
           return;
@@ -129,4 +129,4 @@ export {
   c as a,
   m as b
 };
-//# sourceMappingURL=chunk-MJW4EJKV.mjs.map
+//# sourceMappingURL=chunk-72R6MDKB.mjs.map

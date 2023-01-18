@@ -1,7 +1,7 @@
 import {
   a as o,
   b as r
-} from "../chunk-MJW4EJKV.mjs";
+} from "../chunk-72R6MDKB.mjs";
 export {
   o as Document,
   r as YSocketIO

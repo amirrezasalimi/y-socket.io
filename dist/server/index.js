@@ -16,20 +16,20 @@ var C = (i, r) => {
 var m = (i, r, t) => (t = i != null ? D(b(i)) : {}, y(
   r || !i || !i.__esModule ? d(t, "default", { value: i, enumerable: !0 }) : t,
   i
-)), k = (i) => y(d({}, "__esModule", { value: !0 }), i);
+)), Y = (i) => y(d({}, "__esModule", { value: !0 }), i);
 
 // src/server/index.ts
-var _ = {};
-C(_, {
+var k = {};
+C(k, {
   Document: () => l,
   YSocketIO: () => w
 });
-module.exports = k(_);
+module.exports = Y(k);
 
 // src/server/document.ts
-var g = m(require("yjs")), h = m(require("y-protocols/awareness")), Y = process.env.GC !== "false" && process.env.GC !== "0", l = class extends g.Doc {
+var g = m(require("yjs")), h = m(require("y-protocols/awareness")), _ = process.env.GC !== "false" && process.env.GC !== "0", l = class extends g.Doc {
   constructor(t, e, s) {
-    super({ gc: Y });
+    super({ gc: _ });
     this.onUpdateDoc = (t) => {
       var e;
       if (((e = this.callbacks) == null ? void 0 : e.onUpdate) != null)
@@ -107,7 +107,7 @@ var v = require("lib0/observable"), w = class extends v.Observable {
       var o, a;
       let s = e.nsp.name.replace(/\/yjs\|/, ""), n = await this.initDocument(s, e.nsp, (o = this.configuration) == null ? void 0 : o.gcEnabled);
       if (((a = this.configuration) == null ? void 0 : a.permissionMiddleware) != null) {
-        let c = await this.configuration.permissionMiddleware(e.handshake, n);
+        let c = await this.configuration.permissionMiddleware(e, n);
         if (n.getMap("permissions").set(e.id, c), c.length == 0) {
           e.disconnect();
           return;

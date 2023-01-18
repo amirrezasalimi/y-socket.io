@@ -1,5 +1,5 @@
 import * as Y from 'yjs';
-import { Namespace, Server } from 'socket.io';
+import { Namespace, Socket, Server } from 'socket.io';
 import * as AwarenessProtocol from 'y-protocols/awareness';
 import { Observable } from 'lib0/observable';
 
@@ -111,9 +111,7 @@ interface YSocketIOConfiguration {
     authenticate?: (handshake: {
         [key: string]: any;
     }) => Promise<boolean> | boolean;
-    permissionMiddleware?: (handshake: {
-        [key: string]: any;
-    }, doc: Document) => Promise<string[]> | string[];
+    permissionMiddleware?: (socket: Socket, doc: Document) => Promise<string[]> | string[];
 }
 /**
  * YSocketIO class. This handles document synchronization.

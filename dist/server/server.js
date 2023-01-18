@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 "use strict";
-var C = Object.create;
+var k = Object.create;
 var w = Object.defineProperty;
 var Y = Object.getOwnPropertyDescriptor;
 var _ = Object.getOwnPropertyNames;
@@ -11,7 +11,7 @@ var N = (i, r, t, e) => {
       !M.call(i, n) && n !== t && w(i, n, { get: () => r[n], enumerable: !(e = Y(r, n)) || e.enumerable });
   return i;
 };
-var p = (i, r, t) => (t = i != null ? C(L(i)) : {}, N(
+var p = (i, r, t) => (t = i != null ? k(L(i)) : {}, N(
   r || !i || !i.__esModule ? w(t, "default", { value: i, enumerable: !0 }) : t,
   i
 ));
@@ -20,7 +20,7 @@ var p = (i, r, t) => (t = i != null ? C(L(i)) : {}, N(
 var D = p(require("http")), U = require("socket.io");
 
 // src/server/y-socket-io.ts
-var l = p(require("yjs")), u = p(require("y-protocols/awareness")), g = require("y-leveldb");
+var l = p(require("yjs")), h = p(require("y-protocols/awareness")), v = require("y-leveldb");
 
 // src/server/document.ts
 var y = p(require("yjs")), m = p(require("y-protocols/awareness")), E = process.env.GC !== "false" && process.env.GC !== "0", d = class extends y.Doc {
@@ -42,8 +42,8 @@ var y = p(require("yjs")), m = p(require("y-protocols/awareness")), E = process.
       if (((c = this.callbacks) == null ? void 0 : c.onChangeAwareness) != null)
         try {
           this.callbacks.onChangeAwareness(this, a);
-        } catch (k) {
-          console.warn(k);
+        } catch (C) {
+          console.warn(C);
         }
       this.namespace.emit("awareness-update", a);
     };
@@ -62,7 +62,7 @@ var y = p(require("yjs")), m = p(require("y-protocols/awareness")), E = process.
 };
 
 // src/server/y-socket-io.ts
-var v = require("lib0/observable"), h = class extends v.Observable {
+var g = require("lib0/observable"), u = class extends g.Observable {
   constructor(t, e) {
     var n;
     super();
@@ -78,7 +78,7 @@ var v = require("lib0/observable"), h = class extends v.Observable {
     };
     this.initAwarenessListeners = (t, e) => {
       t.on("awareness-update", (n) => {
-        u.applyAwarenessUpdate(e.awareness, new Uint8Array(n), t);
+        h.applyAwarenessUpdate(e.awareness, new Uint8Array(n), t);
       });
     };
     this.initSocketListeners = (t, e) => {
@@ -89,7 +89,7 @@ var v = require("lib0/observable"), h = class extends v.Observable {
     this.startSynchronization = (t, e) => {
       t.emit("sync-step-1", l.encodeStateVector(e), (n) => {
         l.applyUpdate(e, new Uint8Array(n), this);
-      }), t.emit("awareness-update", u.encodeAwarenessUpdate(e.awareness, Array.from(e.awareness.getStates().keys())));
+      }), t.emit("awareness-update", h.encodeAwarenessUpdate(e.awareness, Array.from(e.awareness.getStates().keys())));
     };
     this.io = t, this._levelPersistenceDir = (n = e == null ? void 0 : e.levelPersistenceDir) != null ? n : process.env.YPERSISTENCE, this._levelPersistenceDir != null && this.initLevelDB(this._levelPersistenceDir), this.configuration = e;
   }
@@ -102,7 +102,7 @@ var v = require("lib0/observable"), h = class extends v.Observable {
       var o, a;
       let n = e.nsp.name.replace(/\/yjs\|/, ""), s = await this.initDocument(n, e.nsp, (o = this.configuration) == null ? void 0 : o.gcEnabled);
       if (((a = this.configuration) == null ? void 0 : a.permissionMiddleware) != null) {
-        let c = await this.configuration.permissionMiddleware(e.handshake, s);
+        let c = await this.configuration.permissionMiddleware(e, s);
         if (s.getMap("permissions").set(e.id, c), c.length == 0) {
           e.disconnect();
           return;
@@ -126,7 +126,7 @@ var v = require("lib0/observable"), h = class extends v.Observable {
     return s.gc = n, this._documents.has(t) || (this.persistence != null && await this.persistence.bindState(t, s), this._documents.set(t, s), this.emit("document-loaded", [s])), s;
   }
   initLevelDB(t) {
-    let e = new g.LeveldbPersistence(t);
+    let e = new v.LeveldbPersistence(t);
     this.persistence = {
       provider: e,
       bindState: async (n, s) => {
@@ -146,7 +146,7 @@ var v = require("lib0/observable"), h = class extends v.Observable {
 // src/server/server.ts
 var S, O = (S = process.env.HOST) != null ? S : "localhost", A, f = parseInt(`${(A = process.env.PORT) != null ? A : 1234}`), b = D.default.createServer((i, r) => {
   r.writeHead(200, { "Content-Type": "application/json" }), r.end(JSON.stringify({ ok: !0 }));
-}), P = new U.Server(b), x = new h(P, {});
+}), P = new U.Server(b), x = new u(P, {});
 x.initialize();
 P.on("connection", (i) => {
   console.log(`[connection] Connected with user: ${i.id}`), i.on("disconnect", () => {
