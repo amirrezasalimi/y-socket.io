@@ -113,7 +113,7 @@ interface YSocketIOConfiguration {
     }) => Promise<boolean> | boolean;
     permissionMiddleware?: (handshake: {
         [key: string]: any;
-    }) => Promise<string[]> | string[];
+    }, doc: Document) => Promise<string[]> | string[];
 }
 /**
  * YSocketIO class. This handles document synchronization.

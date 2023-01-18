@@ -44,7 +44,7 @@ import * as o from "yjs";
 import * as p from "y-protocols/awareness";
 import { LeveldbPersistence as g } from "y-leveldb";
 import { Observable as v } from "lib0/observable";
-var h = class extends v {
+var m = class extends v {
   constructor(t, e) {
     var s;
     super();
@@ -84,7 +84,7 @@ var h = class extends v {
       var a, i;
       let s = e.nsp.name.replace(/\/yjs\|/, ""), n = await this.initDocument(s, e.nsp, (a = this.configuration) == null ? void 0 : a.gcEnabled);
       if (((i = this.configuration) == null ? void 0 : i.permissionMiddleware) != null) {
-        let r = await this.configuration.permissionMiddleware(e.handshake);
+        let r = await this.configuration.permissionMiddleware(e.handshake, n);
         if (n.getMap("permissions").set(e.id, r), r.length == 0) {
           e.disconnect();
           return;
@@ -127,6 +127,6 @@ var h = class extends v {
 
 export {
   c as a,
-  h as b
+  m as b
 };
-//# sourceMappingURL=chunk-4CELOTHQ.mjs.map
+//# sourceMappingURL=chunk-MJW4EJKV.mjs.map

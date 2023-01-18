@@ -102,7 +102,7 @@ var v = require("lib0/observable"), h = class extends v.Observable {
       var o, a;
       let n = e.nsp.name.replace(/\/yjs\|/, ""), s = await this.initDocument(n, e.nsp, (o = this.configuration) == null ? void 0 : o.gcEnabled);
       if (((a = this.configuration) == null ? void 0 : a.permissionMiddleware) != null) {
-        let c = await this.configuration.permissionMiddleware(e.handshake);
+        let c = await this.configuration.permissionMiddleware(e.handshake, s);
         if (s.getMap("permissions").set(e.id, c), c.length == 0) {
           e.disconnect();
           return;

@@ -1,7 +1,7 @@
 "use strict";
-var U = Object.create;
+var D = Object.create;
 var d = Object.defineProperty;
-var D = Object.getOwnPropertyDescriptor;
+var U = Object.getOwnPropertyDescriptor;
 var S = Object.getOwnPropertyNames;
 var b = Object.getPrototypeOf, P = Object.prototype.hasOwnProperty;
 var C = (i, r) => {
@@ -10,10 +10,10 @@ var C = (i, r) => {
 }, y = (i, r, t, e) => {
   if (r && typeof r == "object" || typeof r == "function")
     for (let s of S(r))
-      !P.call(i, s) && s !== t && d(i, s, { get: () => r[s], enumerable: !(e = D(r, s)) || e.enumerable });
+      !P.call(i, s) && s !== t && d(i, s, { get: () => r[s], enumerable: !(e = U(r, s)) || e.enumerable });
   return i;
 };
-var m = (i, r, t) => (t = i != null ? U(b(i)) : {}, y(
+var m = (i, r, t) => (t = i != null ? D(b(i)) : {}, y(
   r || !i || !i.__esModule ? d(t, "default", { value: i, enumerable: !0 }) : t,
   i
 )), k = (i) => y(d({}, "__esModule", { value: !0 }), i);
@@ -107,7 +107,7 @@ var v = require("lib0/observable"), w = class extends v.Observable {
       var o, a;
       let s = e.nsp.name.replace(/\/yjs\|/, ""), n = await this.initDocument(s, e.nsp, (o = this.configuration) == null ? void 0 : o.gcEnabled);
       if (((a = this.configuration) == null ? void 0 : a.permissionMiddleware) != null) {
-        let c = await this.configuration.permissionMiddleware(e.handshake);
+        let c = await this.configuration.permissionMiddleware(e.handshake, n);
         if (n.getMap("permissions").set(e.id, c), c.length == 0) {
           e.disconnect();
           return;
